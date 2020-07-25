@@ -1,6 +1,11 @@
+# todo
+# working but need to be checked and improved
+
+
 import pyautogui
 import pywinauto
 import time
+import pandas as pd
 from pywinauto.controls.win32_controls import ButtonWrapper
 from pywinauto.keyboard import send_keys, KeySequenceError
 import config
@@ -17,7 +22,7 @@ def mailConfig(username,inser,outser,email_ss,password_s):
     
     pyautogui.hotkey('win','up')
     
-    time.sleep(2)
+    #time.sleep(2)
     
     window=None
     
@@ -59,21 +64,21 @@ def mailConfig(username,inser,outser,email_ss,password_s):
             pyautogui.press('enter')
             
         except Exception as e:
-            print(e)
+            
             pass
             #print(e)
             
         #click mail icon on control panel   
         try:
             config.logger.info('Searching for Mail (Microsoft Outlook 2016) (32-bit) icon')
-            mail.child_window(title="Mail (Microsoft Outlook 2016)").wait('visible', timeout=120, retry_interval=0.5).click_input()
+            mail.child_window(title="Mail (Microsoft Outlook 2016) (32-bit)").wait('visible', timeout=120, retry_interval=0.5).click_input()
             print('Code in try block')
         except Exception as e:
             config.logger.info('Searching for Mail icon')
             mail.child_window(title="Mail", auto_id="name").wait('visible', timeout=120, retry_interval=0.5).click_input()
             print('Code in except block')
             
-            time.sleep(20)
+            time.sleep(2)
         try:
             config.logger.info('Searching for Mail Setup - Outlook window')
             mail_setup_outlook=pywinauto.findwindows.find_windows(best_match='Mail Setup - Outlook')
@@ -92,7 +97,7 @@ def mailConfig(username,inser,outser,email_ss,password_s):
                     except:
                         mail_setup_outlook.child_window(title_re="Email Accounts",control_type="Button").wait('visible', timeout=120, retry_interval=0.5).click()
                         
-                    time.sleep(5)
+                    time.sleep(2)
                     
                     try:
                         config.logger.info('Searching for Account Settings window')
@@ -115,7 +120,7 @@ def mailConfig(username,inser,outser,email_ss,password_s):
                             #print('In Except')
                         
                         
-                        time.sleep(4)
+                        #time.sleep(2)
                         try:
                             config.logger.info('Searching for Add Account window for clicking on Manual Setup radio button')
                             add_account=pywinauto.findwindows.find_windows(best_match='Add Account')
@@ -128,7 +133,7 @@ def mailConfig(username,inser,outser,email_ss,password_s):
                             add_account.child_window(title="Manual setup or additional server types",control_type="RadioButton").wait('visible', timeout=120, retry_interval=0.5).click()
                             add_account.child_window(title="Next >",control_type="Button").wait('visible', timeout=120, retry_interval=0.5).click()
                             
-                            time.sleep(4)
+                            #time.sleep(2)
                             
                             try:
                                 config.logger.info('Searching for Add Account window for clicking on POP or IMAP radio button')
@@ -144,7 +149,7 @@ def mailConfig(username,inser,outser,email_ss,password_s):
                                 add_account.child_window(title="Next >",control_type="Button").wait('visible', timeout=120, retry_interval=0.5).click()
                                 
                                 
-                                time.sleep(4)
+                                #time.sleep(2)
                                 
                                 try:
                                     config.logger.info('Searching for Add Account window for entering user details recevied via chatbot')
@@ -160,7 +165,7 @@ def mailConfig(username,inser,outser,email_ss,password_s):
                                     
                                     #user_details=pd.read_csv('http://127.0.0.1:8000/input.csv').columns
                                     
-                                    user_details=[username,email_ss,password_s]
+                                    user_details=[username,inser,outser,email_ss,password_s]
                                     
                                     add_account["Your Name:Edit"].type_keys(user_details[0])    
                                     
@@ -179,7 +184,7 @@ def mailConfig(username,inser,outser,email_ss,password_s):
                                     
                                     add_account.child_window(title="More Settings ...").wait('visible', timeout=120, retry_interval=0.5).click()
                                     
-                                    time.sleep(4)
+                                    #time.sleep(2)
                                     
                                     try:
                                         config.logger.info('Searching for Internet Email Settings for entering Incoming and Outgoing port details')
@@ -229,17 +234,46 @@ def mailConfig(username,inser,outser,email_ss,password_s):
                                         add_account.child_window(title="Next >",control_type="Button").wait('visible', timeout=120, retry_interval=0.5).click()
    
                                         
-                                        time.sleep(5)
+                                        time.sleep(2)
                                         test_account=pywinauto.findwindows.find_windows(best_match='Test Account Settings')
                                         test_account=control_panel.window_(handle=test_account[0])
                                         test_account.set_focus()
-                                        test_account.child_window(title='Close',control_type="Button").wait('visible',timeout=120, retry_interval=0.5).click()
-                                    
-                                        time.sleep(5)
+                                        for i in range(10):
+                                            try:
+                                                test_account.child_window(title='Close',control_type="Button").wait('visible',timeout=120, retry_interval=0.5).click()
+                                                break
+                                            except:
+                                                try:
+                                                        invalid_password = pywinauto.findwindows.find_windows(best_match='Internet Email - '+str(user_details[1]))
+                                                        invalid_password=control_panel.window_(handle=invalid_password[0])
+                                                        invalid_password.set_focus()
+                                                        print(invalid_password)
+                                                        if invalid_password:
+                                                            send_keys('"%{F4}"')
+                                                         
+                                                            send_keys('"%{F4}"')
+                                                            
+                                                            send_keys('"%{F4}"')
+                                                           
+                                                            send_keys('"%{F4}"')
+                                                           # time.sleep(1)
+                                                            send_keys('"%{F4}"')
+                                                           # time.sleep(1)
+                                                            send_keys('"%{F4}"')
+                                                           # time.sleep(1)
+                                                            send_keys('"%{F4}"')
+                                                           # time.sleep(1)
+                                                            send_keys('"%{F4}"')
+
+                                                            return ("Invalid Credentials")
+                                                except:
+                                                    print("Both windows not found")
+
+                                        #time.sleep(2)
                                         add_account.child_window(title="Finish", control_type="Button").click()
                                         #time.sleep(2)
                                         #add_account.child_window(title="Cancel", control_type="Button").click()
-                                        time.sleep(2)
+                                        #time.sleep(2)
                                         
                                         #account_settings.child_window(title='Close',control_type="Button").wait('visible',timeout=120, retry_interval=0.5).click()
                                         #account_settings.child_window(title="Close", control_type="Button").click()
@@ -252,4 +286,8 @@ def mailConfig(username,inser,outser,email_ss,password_s):
                                         time.sleep(2)
                                         send_keys('"%{F4}"')
                                         
-    return 'Successfully Configured'
+                                        flag=1
+    
+    
+    return "Sucess"
+#mailConfig()
