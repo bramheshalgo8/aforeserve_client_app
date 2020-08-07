@@ -21,6 +21,8 @@ import test_fetch_mail_for_8
 import Printer_Latest_Remove_Latency_for_7
 import test_fetch_mail_for_7
 import configparser
+
+
 config1 = configparser.ConfigParser()
 config1.read('config_test.ini')
 # creating new id
@@ -109,20 +111,33 @@ inser, outser = res['inserver'], res['outserver']
 dprint = '2'
 
 # creating new user
-
+# storing tid
+def storetid(t):
+    global tid
+    tid = t
+    return tid
 
 url = config1['DEFAULT']['URL']+'/userdetails/old/'+hostname+'/'+IP+'/' + \
     str(ids)+'/'+sernum+'/'+OS_v+'/'+lap_desk + \
     '/'+inser+'/'+outser+'/'+dprint+'/'+username
 get(url)
 
+
 @app.route('/feedback',methods=['GET','POST'])
 def feedback():
     feed = request.args.get('con1')
     feed = feed.replace(' ','_')
-    url = config1['DEFAULT']['URL']+'/feedback/'+feed+'/'+str(ids)+'/'+str(tid)
+    url = config1['DEFAULT']['URL']+'/feedback/'+feed+'/'+str(tid)+'/'+str(ids)
     res = get(url)
-    return None
+    return res.text
+
+@app.route('/emailadd',methods=['GET','POST'])
+def emailadd():
+    feed = request.args.get('em')
+    feed = feed.replace(' ','_')
+    url = config1['DEFAULT']['URL']+'/emailadd/'+feed+'/'+str(ids)
+    res = get(url)
+    return "hello"
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -135,13 +150,13 @@ def pr():
     url = config1['DEFAULT']['URL']+'/newt/Printer_to_be_configured/Printer_to_be_configured/' + \
         str(ids)
     res = get(url)
-    global tid 
-    tid = res.text
+    storetid(res.text)
     if rel == '8.1':
         out = Printer_Latest_Remove_Latency_for_8.printerConfig(
             manufac_name, mdelname)
+        print(out)
         # out = 'success'
-        if out == 'success':
+        if out == 'Success':
             url = config1['DEFAULT']['URL']+'/upt/'+res.text
             res1 = get(url)
             return '''
@@ -154,13 +169,15 @@ def pr():
                                     <button class="btn btn-secondary" onclick="feedback()">Proceed</button>                        
     </p>
             '''
-        elif out == 'failed':
+        else:
             #Assing to department
+            url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+            res = get(url)
             return 'Issue not resolved assigning it to other department'
     elif rel == '7':
         out = Printer_Latest_Remove_Latency_for_7.printerConfig(
             manufac_name, mdelname)
-        if out == 'success':
+        if out == 'Success':
             url = config1['DEFAULT']['URL']+'/upt/'+res.text
             res = get(url)
             return '''
@@ -173,14 +190,18 @@ def pr():
                                     <button class="btn btn-secondary" onclick="feedback()">Proceed</button>                        
     </p>
             '''
-        elif out == 'failed':
+        else:
             #Assing to department
-            return 'Issue not resolved assigning it to other department'
+            url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+            res = get(url)
+            return res.text
+            
     else:
         out = Printer_Latest_Remove_Latency_win10.printerConfig(
             manufac_name, mdelname)
-        # out = 'success'
-        if out == 'success':
+        print(out)
+        # out = 'Fail'
+        if out == 'Success':
             url = config1['DEFAULT']['URL']+'/upt/'+res.text
             res = get(url)
             return '''
@@ -193,9 +214,11 @@ def pr():
                                     <button class="btn btn-secondary" onclick="feedback()">Proceed</button>                        
     </p>
             '''
-        elif out == 'failed':
+        else:
             #Assing to department
-            return 'Issue not resolved assigning it to other department'
+            url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+            res = get(url)
+            return res.text
 
 
 @app.route('/emailconfig', methods=['GET', 'POST'])
@@ -206,14 +229,12 @@ def em():
     url = config1['DEFAULT']['URL']+'/newt/Email_to_be_configured/Email_to_be_configured/' + \
         str(ids)
     res = get(url)
-    global tid 
-    tid = res.text
-    print(res.text)
+    storetid(res.text)
     if rel == '8.1':
         out = test_fetch_mail_for_8.mailConfig(
             username, inser, outser, email_ss, password_s)
-        if out == 'success':
-            url = config1['DEFAULT']['URL']+'/upt/'+res.text
+        if out == 'Success':
+            url = config1['DEFAULT']['URL']+'/upt/'+str(res.text)
             res = get(url)
             return '''
             <p class="speech-bubble btn-primary" style="height: 43%;padding-right: 3%;">
@@ -225,15 +246,16 @@ def em():
                                     <button class="btn btn-secondary" onclick="feedback()">Proceed</button>                        
     </p>
             '''
-        elif out == 'failed':
+        else:
             #Assing to department
-            return 'Issue not resolved assigning it to other department'
+            rurl = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+            res = get(url)
+            return res.text
     elif rel == '7':
         out = test_fetch_mail_for_7.mailConfig(
             username, inser, outser, email_ss, password_s)
-        if out == 'success':
+        if out == 'Success':
             url = config1['DEFAULT']['URL']+'/upt/'+res.text
-            res = get(url)
             return '''
             <p class="speech-bubble btn-primary" style="height: 43%;padding-right: 3%;">
                             Please Give Feedback
@@ -244,16 +266,21 @@ def em():
                                     <button class="btn btn-secondary" onclick="feedback()">Proceed</button>                        
     </p>
             '''
-        elif out == 'failed':
+        else:
             #Assing to department
-            return 'Issue not resolved assigning it to other department'
+            url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+            res = get(url)
+            return res.text
     else:
         out = test_fetch_mail_win10.mailConfig(
             username, inser, outser, email_ss, password_s)
         # out = 'success'
-        if out == 'success':
-            url = config1['DEFAULT']['URL']+'/upt/'+res.text
+        print(out)
+        if out == 'Success':
+            url = config1['DEFAULT']['URL']+'/upt/'+str(tid)
+            # print(url)
             res = get(url)
+            # print(res.text)
             return '''
             <p class="speech-bubble btn-primary" style="height: 43%;padding-right: 3%;">
                             Please Give Feedback
@@ -264,9 +291,11 @@ def em():
                                     <button class="btn btn-secondary" onclick="feedback()">Proceed</button>                        
     </p>
             '''
-        elif out == 'failed':
+        else:
             #Assing to department
-            return 'Issue not resolved assigning it to other department'
+            url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+            res = get(url)
+            return res.text
 
 
 @app.route('/passw', methods=['GET', 'POST'])
@@ -274,8 +303,7 @@ def passw():
     url = config1['DEFAULT']['URL']+'/newt/password_has_to_be_changed/password_has_to_be_changed/' + \
         str(ids)
     res = get(url)
-    global tid 
-    tid = res.text
+    storetid(res.text)
     url = config1['DEFAULT']['URL']+'/upt/'+res.text
     res = get(url)
     return '''
@@ -295,10 +323,9 @@ def dc():
     url = config1['DEFAULT']['URL']+'/newt/Disk_full_disk_clean_to_be_configured/disk_full_disk_clean_to_be_configured/' + \
         str(ids)
     res = get(url)
-    global tid 
-    tid = res.text
+    storetid(res.text)
     out = diskCleanup.startCleanup()
-    if out == 'success':
+    if out == 'Success':
         url = config1['DEFAULT']['URL']+'/upt/'+ res.text
         res = get(url)
         return '''
@@ -311,9 +338,11 @@ def dc():
                                     <button class="btn btn-secondary" onclick="feedback()">Proceed</button>                        
     </p>
             '''
-    elif out == 'failed':
+    else:
         #Assing to department
-        return 'Issue not resolved assigning it to other department'
+        url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+        res = get(url)
+        return res.text
 
 
 @app.route('/sft', methods=['GET', 'POST'])
@@ -333,10 +362,17 @@ def newreq():
         Your IP : '''+str(IP)+'''
        <br>
        Your Hostname : '''+str(username.title())+'''
+       </p>
+    <p class="speech-bubble btn-primary" style="height: 43%;padding-right: 3%;">
+    <br>
+                            Please enter your email
+                            <br>
+                            <br>
+                                    <input type="text" id="user_email" class="form-control" placeholder="Email">
+                                                  
     </p>
     '''
-
-
+    
 @app.route('/confirmnew', methods=['GET', 'POST'])
 def connew():
     arg = request.args.get('con1')
@@ -360,6 +396,7 @@ def connew():
                                             
     </p>
     '''
+    # elif arg == 'proceed':
     elif arg == 'sftcon':
         return '''
         <p class="speech-bubble btn-primary" style="height: 55%;">
@@ -379,25 +416,35 @@ def connew():
     elif arg == 'msoffice':
         url = config1['DEFAULT']['URL']+'/newt/MS_office_installation/MS_office_installation/' + str(ids)
         res = get(url)
+        ticket = res.text
+        url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+        res = get(url)
         return '''
         <p class="speech-bubble btn-primary" style="height: 7%;">
-        Ticket ID : '''+res.text+'''
+        Ticket ID : '''+ticket+''' '''+res.text+'''
         </p>
         '''
     elif arg == 'adobe':
         url = config1['DEFAULT']['URL']+'/newt/adobe_installation/adobe_installation/' + str(ids)
         res = get(url)
-        return '''
-        <p class="speech-bubble btn-primary" style="height: 7%;">
-        Ticket ID : '''+res.text+'''
-        </p>
-        '''
-    elif arg == 'anti':
-        url = config1['DEFAULT']['URL']+'/newt/Antivirus_installation/Antivirus_installation/' + str(ids)
+        ticket = res.text
+        url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
         res = get(url)
         return '''
         <p class="speech-bubble btn-primary" style="height: 7%;">
-        Ticket ID : '''+res.text+'''
+        Ticket ID : '''+ticket+''' '''+res.text+'''
+        </p>
+        '''
+        
+    elif arg == 'anti':
+        url = config1['DEFAULT']['URL']+'/newt/Antivirus_installation/Antivirus_installation/' + str(ids)
+        res = get(url)
+        ticket = res.text
+        url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+        res = get(url)
+        return '''
+        <p class="speech-bubble btn-primary" style="height: 7%;">
+        Ticket ID : '''+ticket+''' '''+res.text+'''
         </p>
         '''
     elif arg == 'otherssft':
@@ -419,9 +466,12 @@ def connew():
         if len(symp) >= 10 and len(des) >= 10:
             url = config1['DEFAULT']['URL']+'/newt/'+symp+'/'+des+'/' + str(ids)
             res = get(url)
+            ticket = res.text
+            url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+            res = get(url)
             return '''
                 <p class="speech-bubble btn-primary" style="height: 7%;">
-                Ticket ID : '''+res.text+'''
+                Ticket ID : '''+ticket+''' '''+res.text+'''
                 </p>
                 '''
         else:
@@ -490,18 +540,24 @@ def sysrelated():
         url = config1['DEFAULT']['URL']+'/newt/auto_shutdown_restart/auto_shutdown_restart/' + \
             str(ids)
         res = get(url)
+        ticket = res.text
+        url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+        res = get(url)
         return '''
         <p class="speech-bubble btn-primary" style="height: 7%;">
-        Ticket ID : '''+res.text+'''
+        Ticket ID : '''+ticket+''' '''+res.text+'''
         </p>
         '''
     elif arg == 'unlog':
         url = config1['DEFAULT']['URL']+'/newt/unable_to_login/unable_to_login/' + \
             str(ids)
         res = get(url)
+        ticket = res.text
+        url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+        res = get(url)
         return '''
         <p class="speech-bubble btn-primary" style="height: 7%;">
-        Ticket ID : '''+res.text+'''
+        Ticket ID : '''+ticket+''' '''+res.text+'''
         </p>
         '''
     elif arg == 'sysother':
@@ -523,11 +579,14 @@ def sysrelated():
         if len(symp) >= 10 and len(des) >= 10:
             url = config1['DEFAULT']['URL']+'/newt/'+symp+'/'+des+'/' + str(ids)
             res = get(url)
+            ticket = res.text
+            url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+            res = get(url)
             return '''
-                <p class="speech-bubble btn-primary" style="height: 7%;">
-                Ticket ID : '''+res.text+'''
-                </p>
-                '''
+            <p class="speech-bubble btn-primary" style="height: 7%;">
+            Ticket ID : '''+ticket+''' '''+res.text+'''
+            </p>
+            '''
         else:
             return '''
                 <p class="speech-bubble btn-primary" style="height: 10%;">
@@ -577,45 +636,60 @@ def apprelated():
         url = config1['DEFAULT']['URL']+'/newt/outlook_related_issue/outlook_related_issue/' + \
             str(ids)
         res = get(url)
+        ticket = res.text
+        url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+        res = get(url)
         return '''
         <p class="speech-bubble btn-primary" style="height: 7%;">
-        Ticket ID : '''+res.text+'''
+        Ticket ID : '''+ticket+''' '''+res.text+'''
         </p>
         '''
     elif arg == 'excel':
         url = config1['DEFAULT']['URL']+'/newt/excel_not_responding/excel_not_responding/' + \
             str(ids)
         res = get(url)
+        ticket = res.text
+        url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+        res = get(url)
         return '''
         <p class="speech-bubble btn-primary" style="height: 7%;">
-        Ticket ID : '''+res.text+'''
+        Ticket ID : '''+ticket+''' '''+res.text+'''
         </p>
         '''
     elif arg == 'sap':
         url = config1['DEFAULT']['URL']+'/newt/sap_not_responding/sap_not_responding/' + \
             str(ids)
         res = get(url)
+        ticket = res.text
+        url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+        res = get(url)
         return '''
         <p class="speech-bubble btn-primary" style="height: 7%;">
-        Ticket ID : '''+res.text+'''
+        Ticket ID : '''+ticket+''' '''+res.text+'''
         </p>
         '''
     elif arg == 'ie':
         url = config1['DEFAULT']['URL']+'/newt/ie_configuration/ie_configuration/' + \
             str(ids)
         res = get(url)
+        ticket = res.text
+        url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+        res = get(url)
         return '''
         <p class="speech-bubble btn-primary" style="height: 7%;">
-        Ticket ID : '''+res.text+'''
+        Ticket ID : '''+ticket+''' '''+res.text+'''
         </p>
         '''
     elif arg == 'vpn':
         url = config1['DEFAULT']['URL']+'/newt/vpn_configuration/vpn_configuration/' + \
             str(ids)
         res = get(url)
+        ticket = res.text
+        url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+        res = get(url)
         return '''
         <p class="speech-bubble btn-primary" style="height: 7%;">
-        Ticket ID : '''+res.text+'''
+        Ticket ID : '''+ticket+''' '''+res.text+'''
         </p>
         '''
     elif arg == 'appother':
@@ -639,12 +713,14 @@ def apprelated():
         if len(symp) >= 10 and len(des) >= 10:
             url = config1['DEFAULT']['URL']+'/newt/'+symp+'/'+des+'/' + str(ids)
             res = get(url)
-            
+            ticket = res.text
+            url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+            res = get(url)
             return '''
-                <p class="speech-bubble btn-primary" style="height: 7%;">
-                Ticket ID : '''+res.text+'''
-                </p>
-                '''
+            <p class="speech-bubble btn-primary" style="height: 7%;">
+            Ticket ID : '''+ticket+''' '''+res.text+'''
+            </p>
+            '''
         else:
             return '''
                 <p class="speech-bubble btn-primary" style="height: 10%;">
@@ -688,18 +764,24 @@ def osrelated():
         url = config1['DEFAULT']['URL']+'/newt/add_pc_with_domain/add_pc_with_domain/' + \
             str(ids)
         res = get(url)
+        ticket = res.text
+        url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+        res = get(url)
         return '''
         <p class="speech-bubble btn-primary" style="height: 7%;">
-        Ticket ID : '''+res.text+'''
+        Ticket ID : '''+ticket+''' '''+res.text+'''
         </p>
         '''
     elif arg == 'osnot':
         url = config1['DEFAULT']['URL']+'/newt/os_not_booting/os_not_booting/' + \
             str(ids)
         res = get(url)
+        ticket = res.text
+        url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+        res = get(url)
         return '''
         <p class="speech-bubble btn-primary" style="height: 7%;">
-        Ticket ID : '''+res.text+'''
+        Ticket ID : '''+ticket+''' '''+res.text+'''
         </p>
         '''
     elif arg == 'osother':
@@ -723,11 +805,14 @@ def osrelated():
         if len(symp) >= 10 and len(des) >= 10:
             url = config1['DEFAULT']['URL']+'/newt/'+symp+'/'+des+'/' + str(ids)
             res = get(url)
+            ticket = res.text
+            url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+            res = get(url)
             return '''
-                <p class="speech-bubble btn-primary" style="height: 7%;">
-                Ticket ID : '''+res.text+'''
-                </p>
-                '''
+            <p class="speech-bubble btn-primary" style="height: 7%;">
+            Ticket ID : '''+ticket+''' '''+res.text+'''
+            </p>
+            '''
         else:
             return '''
                 <p class="speech-bubble btn-primary" style="height: 10%;">
@@ -771,18 +856,24 @@ def printerrelated():
         url = config1['DEFAULT']['URL']+'/newt/Printer_Not_working/Printer_Not_working/' + \
             str(ids)
         res = get(url)
+        ticket = res.text
+        url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+        res = get(url)
         return '''
         <p class="speech-bubble btn-primary" style="height: 7%;">
-        Ticket ID : '''+res.text+'''
+        Ticket ID : '''+ticket+''' '''+res.text+'''
         </p>
         '''
     elif arg == 'notproper':
         url = config1['DEFAULT']['URL']+'/newt/Printer_not_proper/Printer_Not_proper/' + \
             str(ids)
         res = get(url)
+        ticket = res.text
+        url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+        res = get(url)
         return '''
         <p class="speech-bubble btn-primary" style="height: 7%;">
-        Ticket ID : '''+res.text+'''
+        Ticket ID : '''+ticket+''' '''+res.text+'''
         </p>
         '''
     elif arg == 'otherprint':
@@ -806,11 +897,14 @@ def printerrelated():
         if len(symp) >= 10 and len(des) >= 10:
             url = config1['DEFAULT']['URL']+'/newt/'+symp+'/'+des+'/' + str(ids)
             res = get(url)
+            ticket = res.text
+            url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+            res = get(url)
             return '''
-                <p class="speech-bubble btn-primary" style="height: 7%;">
-                Ticket ID : '''+res.text+'''
-                </p>
-                '''
+            <p class="speech-bubble btn-primary" style="height: 7%;">
+            Ticket ID : '''+ticket+''' '''+res.text+'''
+            </p>
+            '''
         else:
             return '''
                 <p class="speech-bubble btn-primary" style="height: 10%;">
@@ -843,38 +937,50 @@ def networkrelated():
         url = config1['DEFAULT']['URL']+'/newt/Internet_explorer_not_working/Internet_explorer_not_working/' + \
             str(ids)
         res = get(url)
+        ticket = res.text
+        url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+        res = get(url)
         return '''
             <p class="speech-bubble btn-primary" style="height: 7%;">
-            Ticket ID : '''+res.text+'''
+            Ticket ID : '''+ticket+''' '''+res.text+'''
             </p>
             '''
     elif arg == 'noaccess':
         url = config1['DEFAULT']['URL']+'/newt/Unable_to_access_server/Unable_to_access_server/' + \
             str(ids)
         res = get(url)
+        ticket = res.text
+        url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+        res = get(url)
         return '''
-            <p class="speech-bubble btn-primary" style="height: 7%;">
-            Ticket ID : '''+res.text+'''
-            </p>
-            '''
+        <p class="speech-bubble btn-primary" style="height: 7%;">
+        Ticket ID : '''+ticket+''' '''+res.text+'''
+        </p>
+        '''
     elif arg == 'ipchange':
         url = config1['DEFAULT']['URL']+'/newt/IP_address_change/IP_address_change/' + \
             str(ids)
         res = get(url)
+        ticket = res.text
+        url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+        res = get(url)
         return '''
-            <p class="speech-bubble btn-primary" style="height: 7%;">
-            Ticket ID : '''+res.text+'''
-            </p>
-            '''
+        <p class="speech-bubble btn-primary" style="height: 7%;">
+        Ticket ID : '''+ticket+''' '''+res.text+'''
+        </p>
+        '''
     elif arg == 'wifi':
         url = config1['DEFAULT']['URL']+'/newt/wi_fi_configuration/wi_fi_configuration/' + \
             str(ids)
         res = get(url)
+        ticket = res.text
+        url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+        res = get(url)
         return '''
-            <p class="speech-bubble btn-primary" style="height: 7%;">
-            Ticket ID : '''+res.text+'''
-            </p>
-            '''
+        <p class="speech-bubble btn-primary" style="height: 7%;">
+        Ticket ID : '''+ticket+''' '''+res.text+'''
+        </p>
+        '''
     elif arg == 'other':
         return '''
             <p class="speech-bubble btn-primary" style="height: 43%;padding-right: 3%;">
@@ -896,9 +1002,12 @@ def networkrelated():
         if len(symp) >= 10 and len(des) >= 10:
             url = config1['DEFAULT']['URL']+'/newt/'+symp+'/'+des+'/' + str(ids)
             res = get(url)
+            ticket = res.text
+            url = config1['DEFAULT']['URL']+'/assign/'+res.text+'/'+str(ids)
+            res = get(url)
             return '''
                     <p class="speech-bubble btn-primary" style="height: 7%;">
-                    Ticket ID : '''+res.text+'''
+                    Ticket ID : '''+ticket+''' '''+res.text+'''
                     </p>
                     '''
         else:
