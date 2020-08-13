@@ -345,7 +345,7 @@
         $('#mod').scrollTop($('#mod')[0].scrollHeight);
       }, 120000);
       $.get("/diskclean").done(function (data) {
-        html = "<br><div align='left'><p class='speech-bubble btn-primary' style='padding-left: 3%;'>" + data + "</p></div>";
+        html = "<br><div align='left'>" + data + "</div>";
         $("#mod").append(html);
         $('#mod').scrollTop($('#mod')[0].scrollHeight);
       })
@@ -363,7 +363,7 @@
         $('#mod').scrollTop($('#mod')[0].scrollHeight);
       }, 120000);
       $.get("/diskclean").done(function (data) {
-        html = "<br><div align='left'><p class='speech-bubble btn-primary' style='padding-left: 3%;'>" + data + "</p></div>";
+        html = "<br><div align='left'>" + data + "</div>";
         $("#mod").append(html);
         $('#mod').scrollTop($('#mod')[0].scrollHeight);
       })
@@ -493,7 +493,7 @@
       email_s = document.getElementById('useremail').value;
       password_s = document.getElementById('password').value;
       $.get("/emailconfig", { username: username, email_s: email_s, password_s: password_s }).done(function (data) {
-        html = "<br><div align='left'><p class='speech-bubble btn-primary' style='padding-left: 3%;'>" + data + "</p></div>";
+        html = "<br><div align='left'>" + data + "</div>";
         $("#mod").append(html);
         $('#mod').scrollTop($('#mod')[0].scrollHeight);
       })
@@ -605,7 +605,7 @@
         $('#mod').scrollTop($('#mod')[0].scrollHeight);
       }, 120000);
       $.get("/pr", { manuname: manuname, model: model }).done(function (data) {
-        html = "<br><div align='left'><p class='speech-bubble btn-primary' style='padding-left: 3%;'>" + data + "</p></div>";
+        html = "<br><div align='left'>" + data + "</div>";
         $("#mod").append(html);
         $('#mod').scrollTop($('#mod')[0].scrollHeight);
       });
@@ -830,6 +830,22 @@
       $.get("/feedback",{con1:text}).done(function (data) {
         console.log(data);
         html = "<br><div align='left'><p class='speech-bubble btn-primary' style='padding-right: 3%;'>"+data+"</p></div>";
+        $("#mod").append(html);
+        $('#mod').scrollTop($('#mod')[0].scrollHeight);
+      });
+    }
+    function helpdesk(){
+      $.get("/helpdesk").done(function (data) {
+        console.log(data);
+        html = "<br><div align='left'>"+data+"</p></div>";
+        $("#mod").append(html);
+        $('#mod').scrollTop($('#mod')[0].scrollHeight);
+      });
+    }
+    function itpolicies(){
+      $.get("/itpolicies").done(function (data) {
+        console.log(data);
+        html = "<br><div align='left'>"+data+"</div>";
         $("#mod").append(html);
         $('#mod').scrollTop($('#mod')[0].scrollHeight);
       });

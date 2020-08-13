@@ -3,8 +3,8 @@
 block_cipher = None
 
 
-a = Analysis(['gui_flask.py'],
-             pathex=['C:\\Users\\hseth\\Desktop\\aforserve_windows_aap'],
+a = Analysis(['final_product.py'],
+             pathex=['C:\\Users\\hseth\\Desktop\\af manage'],
              binaries=[],
              datas=[('templates', 'templates'), ('static', 'static')],
              hiddenimports=[],
@@ -19,15 +19,19 @@ pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,
           a.scripts,
-          a.binaries,
-          a.zipfiles,
-          a.datas,
           [],
-          name='gui_flask',
+          exclude_binaries=True,
+          name='final_product',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          upx_exclude=[],
-          runtime_tmpdir=None,
           console=True )
+coll = COLLECT(exe,
+               a.binaries,
+               a.zipfiles,
+               a.datas,
+               strip=False,
+               upx=True,
+               upx_exclude=[],
+               name='final_product')
